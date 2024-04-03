@@ -5,6 +5,10 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import { darkTheme } from "./theme";
+import "handsontable/dist/handsontable.full.min.css";
+import { registerAllModules } from "handsontable/registry";
+
+registerAllModules();
 
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement

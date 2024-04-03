@@ -1,45 +1,79 @@
-import React from "react";
-import {
-  Box,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
-import { HeatmapProps } from "./Heatmap.props";
+import { HotTable } from "@handsontable/react";
+import Handsontable from "handsontable";
+import "../../index.css";
+import { registerRenderer, textRenderer } from "handsontable/renderers";
+import { registerAllModules } from "handsontable/registry";
+import "handsontable/dist/handsontable.full.min.css";
+import chroma from "chroma-js";
 
-export const HandsontableWidget = (props: HeatmapProps) => {
-  const { tableData, tableHeaders } = props;
+// register Handsontable's modules
+registerAllModules();
 
-  const showColHeader = (item: string) => {
-    return <TableCell>{item}</TableCell>;
-  };
+const HandsontableWidget = (props: any) => {
+  chroma("#D4F880").darken().hex();
 
-  const showColHeaders = () => {
-    return (
-      <TableRow>{tableHeaders.map((header) => showColHeader(header))}</TableRow>
+  function negativeValueRenderer(
+    this: Handsontable,
+    instance: any,
+    td: any,
+    row: any,
+    col: any,
+    prop: any,
+    value: any,
+    cellProperties: any
+  ) {
+    textRenderer.apply(
+      this,
+      arguments as unknown as [
+        Handsontable,
+        HTMLTableCellElement,
+        number,
+        number,
+        string | number,
+        Handsontable.CellValue,
+        Handsontable.CellProperties
+      ]
     );
-  };
 
-  const showRowItem = (item: Array<string | number>) => {
-    return item.map((x) => <TableCell>{x}</TableCell>);
-  };
+    const color = chroma.scale(["white", "red"]).domain([-999999, 999999])(
+      value
+    );
 
-  const showRowData = () => {
-    return tableData.map((x) => <TableRow>{showRowItem(x)}</TableRow>);
-  };
+    td.style.background = color;
+  }
+
+  //  maps function to a lookup string
+  registerRenderer("negativeValueRenderer", negativeValueRenderer);
 
   return (
-    <Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>{showColHeaders()}</TableHead>
-          <TableBody>{showRowData()}</TableBody>
-        </Table>
-      </TableContainer>
-    </Box>
+    <HotTable
+      data={props?.tableData}
+      rowHeaders={true}
+      colHeaders={props?.tableHeaders}
+      height="auto"
+      width={"100%"}
+      autoWrapRow={true}
+      autoWrapCol={true}
+      licenseKey="non-commercial-and-evaluation"
+      afterSelection={function (this: Handsontable, row, col, row2, col2) {
+        const meta = this.getCellMeta(row2, col2);
+
+        if (meta.readOnly) {
+          this.updateSettings({ fillHandle: false });
+        } else {
+          this.updateSettings({ fillHandle: true });
+        }
+      }}
+      cells={function (row, col) {
+        const cellProperties = {
+          renderer: "",
+        };
+        cellProperties.renderer = "negativeValueRenderer"; // uses lookup map
+
+        return cellProperties;
+      }}
+    />
   );
 };
+
+export default HandsontableWidget;

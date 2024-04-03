@@ -1,5 +1,5 @@
-import React from "react";
-import { HighchartsWidget, HandsontableWidget } from "./widgets";
+import { useState } from "react";
+import { HighchartsWidget } from "./widgets";
 import {
   Alert,
   AppBar,
@@ -11,10 +11,40 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import * as dataSource from "./dataSources/versions.json";
-const { tableHeaders, tableData } = dataSource;
+import versionsData from "./dataSources/versions.json";
+import productsData from "./dataSources/products.json";
+import regionsData from "./dataSources/regions.json";
+import HandsontableWidget from "./widgets/heatmap/HandsontableWidget";
+
+enum ButtonNameEnum {
+  VERSION = 'VERSIONS',
+  PRODUCT = 'PRODUCTS',
+  REGION = 'REGIONS',
+}
 
 function App() {
+  const [selected, setSelected] = useState<ButtonNameEnum>(ButtonNameEnum.VERSION);
+  const [tableHeaders, setTableHeaders] = useState<string[]>(versionsData.tableHeaders);
+  const [tableData, setTableData] = useState<any[]>(versionsData.tableData);
+
+  const loadVersions = () => {
+    setSelected(ButtonNameEnum.VERSION);
+    setTableHeaders(versionsData.tableHeaders);
+    setTableData(versionsData.tableData);
+  }
+
+  const loadProducts = () => {
+    setSelected(ButtonNameEnum.PRODUCT);
+    setTableHeaders(productsData.tableHeaders);
+    setTableData(productsData.tableData);
+  }
+
+  const loadRegions = () => {
+    setSelected(ButtonNameEnum.REGION);
+    setTableHeaders(regionsData.tableHeaders);
+    setTableData(regionsData.tableData);
+  }
+
   return (
     <Box className="App">
       <AppBar position="static">
@@ -35,13 +65,13 @@ function App() {
             >
               Data Source:
             </Typography>
-            <Button variant="contained" size="small">
+            <Button variant={selected === ButtonNameEnum.VERSION ? "contained" : "text"} size="small" onClick={loadVersions}>
               Versions
             </Button>
-            <Button size="small" disabled sx={{ margin: "0 15px" }}>
+            <Button variant={selected === ButtonNameEnum.PRODUCT ? "contained" : "text"} size="small" sx={{ margin: "0 15px" }} onClick={loadProducts}>
               Products
             </Button>
-            <Button size="small" disabled>
+            <Button variant={selected === ButtonNameEnum.REGION ? "contained" : "text"}  size="small" onClick={loadRegions}>
               Regions
             </Button>
           </Box>
